@@ -1,12 +1,14 @@
 import numpy as np
 import pickle
 import os
+import sys
 import sqlite3
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StringType, LongType, ArrayType, FloatType, IntegerType
 import pyspark.sql.functions as F
 from delta.tables import DeltaTable
-from sentence_transformers import SentenceTransformer
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from core.embedding import get_model
 
 
 bucket_table_path = "storage/delta_tables/bucket_table"
@@ -19,7 +21,7 @@ spark = SparkSession.builder \
 
 spark.sparkContext.setLogLevel("ERROR")
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = get_model()
 bc_model = spark.sparkContext.broadcast(model)
 
 hash_planes = None
@@ -51,7 +53,6 @@ def compute_similarities(cur_bucket_df, batch_id):
     if cur_bucket_df.isEmpty(): return
 
     print("New batch arrived")
-
     cur_bucket_df = cur_bucket_df.withColumn("row_id", F.monotonically_increasing_id())
     sim_df = cur_bucket_df.alias("df1").join(cur_bucket_df.alias("df2"),(F.col("df1.hash_key") == F.col("df2.hash_key")) &(F.col("df1.row_id") < F.col("df2.row_id"))) 
     sim_df = sim_df.select(

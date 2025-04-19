@@ -1,6 +1,6 @@
 from faker import Faker
 import csv
-import uuid
+import time #import uuid
 import random
 
 fake = Faker()
@@ -22,7 +22,7 @@ def tweet_generator():
                 continue  # Skip empty tweet texts
 
             yield {
-                'tweet_id': str(uuid.uuid4()),
+                'tweet_id': hash(str(time.time())), #str(uuid.uuid4()),
                 'user_id': random.choice(user_ids),
                 'text': tweet_text
             }

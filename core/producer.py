@@ -1,45 +1,38 @@
 import json
 import time
-import random
 from kafka import KafkaProducer
-from faker import Faker
+from core.data_gen import tweet_generator
 
-
-# Initialize Faker for generating synthetic data
-fake = Faker()
-
-def generate_synthetic_tweet():
-    tweet = {
-        "user_id": str(fake.random_number(digits=3, fix_len=True)), 
-        "tweet_id": hash(str(time.time())),
-        "text": fake.sentence(nb_words=12) + " " + " ".join("#" + fake.word() for _ in range(random.randint(0, 3))),
-    }
-    return tweet
+def produce_tweets():
+    """
+    Generator that yields tweets from the tweet_generator in data_gen.py
+    """
+    for tweet in tweet_generator():
+        yield tweet
 
 def main():
-    # Configure the Kafka producer
     producer = KafkaProducer(
-        bootstrap_servers='127.0.0.1:9092',  # Replace with your Kafka broker address if different
+        bootstrap_servers='127.0.0.1:9092', 
         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-        #metadata_timeout_ms=120000 
     )
 
-    topic = "posts"
+    topic = "posts" 
 
-    print("Starting synthetic tweet production...")
+    print("🚀 Starting synthetic tweet production...\nPress Ctrl+C to stop.")
 
-    # Produce messages continuously
     try:
-        while True:
-            tweet_data = generate_synthetic_tweet()
+        for tweet_data in produce_tweets():
             producer.send(topic, tweet_data)
-            print(f"Produced tweet: {tweet_data}")
-            time.sleep(5)
+            print(f"✅ Produced tweet: {tweet_data['tweet_id']} | User: {tweet_data['user_id']} | Text: {tweet_data['text'][:50]}...")
+            time.sleep(1)  # Simulate real-time tweet stream
     except KeyboardInterrupt:
-        print("Stopping producer...")
+        print("\n🛑 Stopping producer...")
+    except Exception as e:
+        print(f"❌ Error occurred: {e}")
     finally:
         producer.flush()
         producer.close()
+        print("✅ Kafka producer closed cleanly.")
 
 if __name__ == "__main__":
     main()
