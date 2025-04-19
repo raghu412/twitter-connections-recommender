@@ -3,3 +3,5 @@
 /storage/database.db
 /storage/hash_planes.pkl
 /core/__pycache__/
+.mlbd
+debug_log.txt

@@ -15,7 +15,7 @@ def get_index(model):
 def add_to_index(tweet, model, index):
     emb = model.encode(tweet["text"])
     emb = normalize([emb])[0]  # Normalize the embedding
-    print(f"Embedding shape: {emb.shape}")
+    #print(f"Embedding shape: {emb.shape}")
     faiss_id = index.ntotal
     index.add(np.array([emb]))
     tweet_store.add_tweet(faiss_id, tweet)
