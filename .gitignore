@@ -1,2 +1,5 @@
 /env/
-/storage/
+/storage/delta_tables/
+/storage/database.db
+/storage/hash_planes.pkl
+/core/__pycache__/

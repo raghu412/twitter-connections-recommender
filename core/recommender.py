@@ -40,6 +40,6 @@ def get_recommendations(tweet_id: str, user_id: str, top_k: int = 5) -> List[str
 
 
 if __name__ == "__main__":
-    recs = get_recommendations(tweet_id="2582842644185088600", user_id = 11, top_k=5)
+    recs = get_recommendations(tweet_id="-5354098800759241434", user_id =  318, top_k=5)
     print("Recommended user IDs:", recs)
    
