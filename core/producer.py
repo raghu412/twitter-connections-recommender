@@ -4,9 +4,6 @@ from kafka import KafkaProducer
 from core.data_gen import tweet_generator
 
 def produce_tweets():
-    """
-    Generator that yields tweets from the tweet_generator in data_gen.py
-    """
     for tweet in tweet_generator():
         yield tweet
 
@@ -16,15 +13,22 @@ def main():
         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
     )
 
-    topic = "posts" 
+    topic = "posts"
+    output_file = "storage/live_feed.jsonl"  # Local file to mirror the feed
 
     print("🚀 Starting synthetic tweet production...\nPress Ctrl+C to stop.")
 
     try:
         for tweet_data in produce_tweets():
+            # Send to Kafka
             producer.send(topic, tweet_data)
+
+            # Append to local file
+            with open(output_file, "a", encoding="utf-8") as f:
+                f.write(json.dumps(tweet_data) + "\n")
+
             print(f"✅ Produced tweet: {tweet_data['tweet_id']} | User: {tweet_data['user_id']} | Text: {tweet_data['text'][:50]}...")
-            time.sleep(1)  # Simulate real-time tweet stream
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\n🛑 Stopping producer...")
     except Exception as e:

@@ -1,7 +1,8 @@
 from faker import Faker
 import csv
-import time #import uuid
+import time 
 import random
+import json
 
 fake = Faker()
 
@@ -22,10 +23,27 @@ def tweet_generator():
                 continue  # Skip empty tweet texts
 
             yield {
-                'tweet_id': hash(str(time.time())), #str(uuid.uuid4()),
+                'tweet_id': int(time.time() * 1000), #str(uuid.uuid4()),
                 'user_id': random.choice(user_ids),
                 'text': tweet_text
             }
+
+def file_based_tweet_generator(file_path="storage/live_feed.jsonl"):
+    """
+    Generator that yields the most recent N tweets from a JSONL file.
+    """
+    seen = set()
+    while True:
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    tweet = json.loads(line.strip())
+                    tweet_id = tweet["tweet_id"]
+                    if tweet_id not in seen:
+                        seen.add(tweet_id)
+                        yield tweet
+        except FileNotFoundError:
+            continue
 
 if __name__ == "__main__":
     #csv_file_path = 'tweets.csv'  # Make sure this path is correct

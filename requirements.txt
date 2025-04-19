@@ -10,3 +10,4 @@ SQLAlchemy==2.0.40
 streamlit
 nest-asyncio
 faiss-cpu
+kafka

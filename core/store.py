@@ -17,5 +17,9 @@ class TweetStore:
     def __contains__(self, faiss_id):
         return faiss_id in self._store
 
+    # This method enables item assignment, e.g., tweet_store[faiss_id] = tweet
+    def __setitem__(self, key, value):
+        self._store[key] = value
+
 # Singleton instance
 tweet_store = TweetStore()
