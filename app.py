@@ -51,7 +51,7 @@ if "feed_tweets" not in st.session_state:
 all_tweets = load_all_tweets()
 
 # App title
-st.title("🟦 Live Tweet Recommender")
+st.title("🟦 Live Users Recommender")
 
 # ─── 1. User Selection ────────────────────────────────────────────────
 st.subheader("👤 Select Your User")
@@ -61,7 +61,8 @@ if not users:
     st.stop()
 
 selected_user = st.selectbox("Choose a user:", users)
-st.markdown(f"### You are viewing tweets from **@{selected_user}**")
+USER_ID = selected_user
+# st.markdown(f"### You are viewing tweets from **@{selected_user}**")
 
 # ─── 2. Live Feed ─────────────────────────────────────────────────────
 st.subheader("✨ Live Feed")
@@ -95,11 +96,29 @@ if st.session_state.liked_tweet_id:
     tweet_id = st.session_state.liked_tweet_id
     matched = next((t for t in all_tweets if t["tweet_id"] == tweet_id), None)
     if matched and tweet_id not in [tid for tid, _ in st.session_state.liked_tweets]:
+        # Add to liked tweets
         st.session_state.liked_tweets.append((matched["tweet_id"], matched["user_id"]))
         st.session_state.just_liked = True
         logging.debug(f"Tweet liked: {matched['tweet_id']}")
         logging.debug("Updated liked tweets: %s", st.session_state.liked_tweets)
         print(f"Liked tweet: {matched['tweet_id']}")  # For testing
+
+        # Remove liked tweet from the feed (only this tweet)
+        st.session_state.feed_tweets = [
+            t for t in st.session_state.feed_tweets if t["tweet_id"] != tweet_id
+        ]
+
+        # Add a new tweet to replace the liked tweet
+        liked_ids = {tid for tid, _ in st.session_state.liked_tweets}
+        unliked_tweets = [
+            t for t in all_tweets
+            if t["tweet_id"] not in liked_ids and t["user_id"] != USER_ID
+        ]
+        new_tweet = random.choice(unliked_tweets) if unliked_tweets else None
+
+        if new_tweet:
+            st.session_state.feed_tweets.append(new_tweet)
+
     st.session_state.liked_tweet_id = None
 
 # ─── 3. Show User's Tweets ─────────────────────────────────────────────
